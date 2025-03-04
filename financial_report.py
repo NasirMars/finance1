@@ -1,6 +1,7 @@
 import pdfplumber
 import sqlite3
 import re
+import os
 
 # File paths for the three years
 pdf_files = {
@@ -8,6 +9,13 @@ pdf_files = {
     "2022": r"D:\Develop\Finance\caibao_data\2022data.pdf",
     "2023": r"D:\Develop\Finance\caibao_data\2023data.pdf",
 }
+
+# Define the database file
+db_path = "financial_data.db"
+
+# **Delete existing database file to start fresh**
+if os.path.exists(db_path):
+    os.remove(db_path)  # Deletes the old database
 
 # Predefined item names (from 11 images)
 item_names = [
@@ -61,11 +69,11 @@ extracted_data = {
     for year, path in pdf_files.items()
 }
 
-# Connect to SQLite and insert data
-conn = sqlite3.connect("financial_data.db")
+# Connect to SQLite and **create a new database**
+conn = sqlite3.connect(db_path)
 cursor = conn.cursor()
 
-# Create table for financial data
+# **Create a fresh table (since the old database was deleted)**
 cursor.execute('''
     CREATE TABLE IF NOT EXISTS financial_data (
         item_name TEXT PRIMARY KEY,
@@ -75,7 +83,7 @@ cursor.execute('''
     )
 ''')
 
-# Insert extracted data into SQLite using `INSERT OR REPLACE` to avoid duplicates
+# **Use `INSERT OR REPLACE` to avoid duplicate issues**
 for item_name in item_names:
     cursor.execute('''
         INSERT OR REPLACE INTO financial_data (item_name, year_2021, year_2022, year_2023)
@@ -91,4 +99,4 @@ for item_name in item_names:
 conn.commit()
 conn.close()
 
-print("✅ Data has been inserted into the SQLite database successfully.")
+print("✅ Database has been successfully **replaced** with new data.")
